@@ -1,0 +1,40 @@
+---
+title: "Prepare the EC dataset"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# parse names text - we'll remove columns 25, 26, & 27 from data as lesion and hard to parse
+
+colic_names <- read_lines("horse-colic.names.txt") %>% 
+  keep(~str_detect(.x, "[0-9]:")) %>% 
+  str_remove(" *[0-9]+:") %>% 
+  discard(~str_detect(.x, "25")) %>% 
+  trimws()
+```
+
+```{r}
+colic <- read_delim("horse-colic.data.txt",
+                    delim = " ",
+                    col_names = FALSE,
+                    col_types = col_character(),
+                    na = "?") %>% 
+  select(-(25:27)) %>% 
+  set_names(colic_names) %>% 
+  janitor::clean_names() %>% 
+  mutate(surgery = fct_relevel(surgery,
+                               "yes" = "1",
+                               "no" = 2))
+
+
+
+```
+
+
