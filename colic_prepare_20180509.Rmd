@@ -1,26 +1,39 @@
 ---
-title: "Prepare the EC dataset"
+title: "Equine Colic data-set"
 output: html_document
 ---
+
+For details see (https://archive.ics.uci.edu/ml/datasets/Horse+Colic)
+
+To load into R use...
+
+```{r, eval = FALSE}
+library(tidyverse)
+
+colic <- read_csv("colic_data.csv")
+```
+
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r}
+```{r, include = FALSE}
 library(tidyverse)
 ```
 
-```{r}
+```{r, include = FALSE}
 # parse names text - we'll remove columns 25, 26, & 27 from data as lesion and hard to parse
 
-colic_names <- read_lines("horse-colic.names.txt") %>% 
-  keep(~str_detect(.x, "[0-9]:")) %>% 
-  str_remove(" *[0-9]+:") %>% 
-  discard(~str_detect(.x, "25")) %>% 
+colic_names <- read_lines("horse-colic.names.txt") %>%
+  keep(~ str_detect(.x, "[0-9]:")) %>%
+  str_remove(" *[0-9]+:") %>%
+  discard(~ str_detect(.x, "25")) %>%
   trimws()
 ```
 
-```{r}
+```{r, include = FALSE}
 colic <- read_delim(
   "horse-colic.data.txt",
   delim = " ",
@@ -30,7 +43,7 @@ colic <- read_delim(
   select(-(25:27)) %>%
   set_names(colic_names) %>%
   janitor::clean_names() %>%
-  rename(pain = pain_a_subjective_judgement_of_the_horses_pain_level) %>% 
+  rename(pain = pain_a_subjective_judgement_of_the_horses_pain_level) %>%
   mutate(
     surgery = fct_recode(
       factor(surgery),
@@ -65,48 +78,51 @@ colic <- read_delim(
       "continuous severe pain" = "5"
     ),
     abdominal_distension = fct_recode(factor(abdominal_distension),
-                                      "none" = "1",
-                                      "slight" = "2",
-                                      "moderate" = "3",
-                                      "severe" = "4"),
+      "none" = "1",
+      "slight" = "2",
+      "moderate" = "3",
+      "severe" = "4"
+    ),
     rectal_examination_feces = fct_recode(factor(rectal_examination_feces),
-                                          "normal" = "1",
-                                          "increased" = "2",
-                                          "decreased" = "3",
-                                          "absent feces" = "4"),
+      "normal" = "1",
+      "increased" = "2",
+      "decreased" = "3",
+      "absent feces" = "4"
+    ),
     outcome = fct_recode(factor(outcome),
-                         "lived" = "1",
-                         "died_or_euth" = "2",
-                         "died_or_euth" = "3"),
+      "lived" = "1",
+      "died_or_euth" = "2",
+      "died_or_euth" = "3"
+    ),
     surgical_lesion = fct_recode(factor(surgical_lesion),
-                                 "yes" = "1",
-                                 "no" = "2"),
+      "yes" = "1",
+      "no" = "2"
+    ),
     capillary_refill_time = fct_recode(factor(capillary_refill_time),
-                                       "< 3 seconds" = "1",
-                                       ">= 3 seconds" = "2"),
+      "< 3 seconds" = "1",
+      ">= 3 seconds" = "2"
+    ),
     peristalsis = fct_recode(factor(peristalsis),
-                             "hypermotile" = "1",
-                             "normal" = "2",
-                             "hypomotile" = "3",
-                             "absent" = "4")
-  ) %>% 
-  select(-cp_data, -abdominocentesis_appearance, -abdomcentesis_total_protein,
-         -nasogastric_tube, -nasogastric_reflux, -nasogastric_reflux_ph,
-         -abdomen, -hospital_number, -mucous_membranes) %>%
-  filter(!is.na(outcome)) %>% 
-  mutate(total_protein = case_when(total_protein > 25 ~ total_protein / 10,
-                            TRUE ~ total_protein)) %>% 
+      "hypermotile" = "1",
+      "normal" = "2",
+      "hypomotile" = "3",
+      "absent" = "4"
+    )
+  ) %>%
+  select(
+    -cp_data, -abdominocentesis_appearance, -abdomcentesis_total_protein,
+    -nasogastric_tube, -nasogastric_reflux, -nasogastric_reflux_ph,
+    -abdomen, -hospital_number, -mucous_membranes
+  ) %>%
+  filter(!is.na(outcome)) %>%
+  mutate(total_protein = case_when(
+    total_protein > 25 ~ total_protein / 10,
+    TRUE ~ total_protein
+  )) %>%
   write_csv("colic_data.csv")
-
-
-
 ```
 
-
-Source:
-
 Creators: 
-
 Mary McLeish & Matt Cecile 
 Department of Computer Science 
 University of Guelph 
@@ -114,43 +130,30 @@ Guelph, Ontario, Canada N1G 2W1
 mdmcleish '@' water.waterloo.edu 
 
 Donor: 
-
 Will Taylor (taylor '@' pluto.arc.nasa.gov)
-
 
 Data Set Information:
 
-2 data files: 
--- horse-colic.data: 300 training instances 
--- horse-colic.test: 68 test instances 
-
-Possible class attributes: 24 (whether lesion is surgical) 
--- others include: 23, 25, 26, and 27 
-
 Many Data types: (continuous, discrete, and nominal)
-
 
 Attribute Information:
 
-1: surgery? 
+1: surgery
 1 = Yes, it had surgery 
 2 = It was treated without surgery 
 
-2: Age 
+2: age 
 1 = Adult horse 
 2 = Young (< 6 months) 
 
-3: Hospital Number 
-- numeric id 
-- the case number assigned to the horse (may not be unique if the horse is treated > 1 time) 
-
-4: rectal temperature 
+4: rectal_temperature 
 - linear 
 - in degrees celsius. 
 - An elevated temp may occur due to infection. 
 - temperature may be reduced when the animal is in late shock 
 - normal temp is 37.8 
 - this parameter will usually change as the problem progresses, eg. may start out normal, then become elevated because of the lesion, passing back through the normal range as the horse goes into shock 
+
 5: pulse 
 - linear 
 - the heart rate in beats per minute 
@@ -158,12 +161,12 @@ Attribute Information:
 - rare to have a lower than normal rate although athletic horses may have a rate of 20-25 
 - animals with painful lesions or suffering from circulatory shock may have an elevated heart rate 
 
-6: respiratory rate 
+6: respiratory_rate 
 - linear 
 - normal rate is 8 to 10 
 - usefulness is doubtful due to the great fluctuations 
 
-7: temperature of extremities 
+7: temperature_of_extremities 
 - a subjective indication of peripheral circulation 
 - possible values: 
 1 = Normal 
@@ -173,7 +176,7 @@ Attribute Information:
 - cool to cold extremities indicate possible shock 
 - hot extremities should correlate with an elevated rectal temp. 
 
-8: peripheral pulse 
+8: peripheral_pulse 
 - subjective 
 - possible values are: 
 1 = normal 
@@ -182,27 +185,14 @@ Attribute Information:
 4 = absent 
 - normal or increased p.p. are indicative of adequate circulation while reduced or absent indicate poor perfusion 
 
-9: mucous membranes 
-- a subjective measurement of colour 
-- possible values are: 
-1 = normal pink 
-2 = bright pink 
-3 = pale pink 
-4 = pale cyanotic 
-5 = bright red / injected 
-6 = dark cyanotic 
-- 1 and 2 probably indicate a normal or slightly increased circulation 
-- 3 may occur in early shock 
-- 4 and 6 are indicative of serious circulatory compromise 
-- 5 is more indicative of a septicemia 
-
-10: capillary refill time 
+10: capillary_refill_time 
 - a clinical judgement. The longer the refill, the poorer the circulation 
 - possible values 
 1 = < 3 seconds 
 2 = >= 3 seconds 
 
-11: pain - a subjective judgement of the horse's pain level 
+11: pain
+- a subjective judgement of the horse's pain level 
 - possible values: 
 1 = alert, no pain 
 2 = depressed 
@@ -221,7 +211,7 @@ Attribute Information:
 3 = hypomotile 
 4 = absent 
 
-13: abdominal distension 
+13: abdominal_distension 
 - An IMPORTANT parameter. 
 - possible values 
 1 = none 
@@ -231,7 +221,8 @@ Attribute Information:
 - an animal with abdominal distension is likely to be painful and have reduced gut motility. 
 - a horse with severe abdominal distension is likely to require surgery just tio relieve the pressure 
 
-17: rectal examination - feces 
+17: rectal_examination
+- feces 
 - possible values 
 1 = normal 
 2 = increased 
@@ -239,12 +230,12 @@ Attribute Information:
 4 = absent 
 - absent feces probably indicates an obstruction 
 
-19: packed cell volume 
+19: packed_cell_volume 
 - linear 
 - the # of red cells by volume in the blood 
 - normal range is 30 to 50. The level rises as the circulation becomes compromised or as the animal becomes dehydrated. 
 
-20: total protein 
+20: total_protein 
 - linear 
 - normal values lie in the 6-7.5 (gms/dL) range 
 - the higher the value the greater the dehydration 
@@ -256,12 +247,13 @@ Attribute Information:
 2 = died or euthanized
 
 
-24: surgical lesion? 
+24: surgical_lesion 
 - retrospectively, was the problem (lesion) surgical? 
 - all cases are either operated upon or autopsied so that this value and the lesion type are always known 
 - possible values: 
 1 = Yes 
 2 = No 
+
 
 
 
